@@ -62,6 +62,22 @@ class User(object): # pylint: disable=too-few-public-methods
         """
         api_connect()
 
+        # Check if the username conflicts with an existing user. The check
+        # is not perfect. A user might be created before the stage user is
+        # activated. The code also suffers from a race condition. It's as
+        # good as it can get without a better API, though.
+        # see https://fedorahosted.org/freeipa/ticket/5186
+        try:
+            api.Command.user_show(uid=self.username)
+        except errors.NotFound:
+            pass
+        else:
+            raise errors.DuplicateEntry(
+                message='active user with name "%(user)s" already exists' % {
+                    'user': self.username
+                }
+            )
+
         api.Command.stageuser_add( # pylint: disable=no-member
             givenname=self.given_name,
             sn=self.family_name,
