@@ -180,7 +180,7 @@ def create_selfservice_permission(name, permtype, memberof=None, extrafilter=Non
     except errors.DuplicateEntry:
         logger.warn("Permission '%s' already exists.", name)
     else:
-        logger.info("Created permission '%s' in '%s'", name, permlocation)
+        logger.info("Created permission '%s' for '%s'", name, permtype)
 
 
 def create_automember_rule(groupname, userclass):
