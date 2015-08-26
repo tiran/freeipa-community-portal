@@ -159,19 +159,22 @@ def create_selfservice_group(name):
         logger.info("Created group '%s'", name)
 
 
-def create_selfservice_permission(name, permtype, memberof):
+def create_selfservice_permission(name, permtype, memberof=None, extrafilter=None):
     admins = DN(('cn', u'admins'), api.env.container_group, api.env.basedn)
     options = {
         'attrs': [u'passwordhistory', u'userpassword', u'krbprincipalkey'],
         'ipapermbindruletype': u'permission',
         'ipapermright': [u'write'],
         'type': permtype,
-        'memberof': [memberof],
         'extratargetfilter': [
             # Explicitly forbid password resets for admins.
             u'(!(memberOf=%s))' % admins,
         ]
     }
+    if memberof is not None:
+        options['memberof'] = [memberof]
+    if extrafilter is not None:
+        options['extratargetfilter'].append(extrafilter)
     try:
         api.Command.permission_add(name, **options)
     except errors.DuplicateEntry:
@@ -336,13 +339,13 @@ def main():
     create_selfservice_group(args.selfservice_group)
     create_selfservice_permission(
         SELFSERVICE_USER_PERMISSION,
-        'User',
-        args.selfservice_group,
+        u'user',
+        memberof=args.selfservice_group,
     )
     create_selfservice_permission(
         SELFSERVICE_STAGEUSER_PERMISSION,
-        'Stage User',
-        args.selfservice_group,
+        u'stageuser',
+        extrafilter='(userclass=%s)' % args.automember_userclass,
     )
     create_automember_rule(
         args.selfservice_group,
