@@ -210,7 +210,7 @@ def create_privilege(name, permissions):
         logger.warn("Privilege '%s' already exists", name)
     else:
         logger.info("Created privilege '%s'", name)
-    value = api.Command.privilege_show(u'Portal management privilege')
+    value = api.Command.privilege_show(name)
     result = value[u'result']
     memberof_permissions = set(result.get(u'memberof_permission', ()))
     for permission in permissions:
