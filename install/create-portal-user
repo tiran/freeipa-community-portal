@@ -159,18 +159,17 @@ def create_selfservice_group(name):
         logger.info("Created group '%s'", name)
 
 
-def create_selfservice_permission(name, container, memberof):
+def create_selfservice_permission(name, permtype, memberof):
     admins = DN(('cn', u'admins'), api.env.container_group, api.env.basedn)
-    permlocation = DN(container, api.env.basedn)
     options = {
+        'attrs': [u'passwordhistory', u'userpassword', u'krbprincipalkey'],
         'ipapermbindruletype': u'permission',
         'ipapermright': [u'write'],
+        'type': permtype,
         'memberof': [memberof],
-        'ipapermlocation': permlocation,
         'extratargetfilter': [
             # Explicitly forbid password resets for admins.
             u'(!(memberOf=%s))' % admins,
-            u'(objectclass=posixaccount)'
         ]
     }
     try:
@@ -337,12 +336,12 @@ def main():
     create_selfservice_group(args.selfservice_group)
     create_selfservice_permission(
         SELFSERVICE_USER_PERMISSION,
-        api.env.container_user,
+        'User',
         args.selfservice_group,
     )
     create_selfservice_permission(
         SELFSERVICE_STAGEUSER_PERMISSION,
-        api.env.container_stageuser,
+        'Stage User',
         args.selfservice_group,
     )
     create_automember_rule(
