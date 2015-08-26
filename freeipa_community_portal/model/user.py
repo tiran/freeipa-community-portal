@@ -21,6 +21,7 @@
 from ipalib import api, errors
 
 from . import api_connect
+from ..config import config
 
 
 class User(object):  # pylint: disable=too-few-public-methods
@@ -112,4 +113,5 @@ class User(object):  # pylint: disable=too-few-public-methods
             sn=self.family_name,
             uid=self.username,
             mail=self.email,
+            userclass=config.userclass,
         )
